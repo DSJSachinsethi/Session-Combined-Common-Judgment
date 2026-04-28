@@ -1,0 +1,2101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Criminal Judgment Template Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:wght@400;600;700&family=Nunito+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════
+   CSS VARIABLES & RESET
+   ══════════════════════════════════════════════════════════ */
+:root {
+  --navy: #14223b;
+  --navy-light: #1c3054;
+  --navy-mid: #1a2a48;
+  --maroon: #6b1d1d;
+  --gold: #b8952a;
+  --gold-light: #d4aa3a;
+  --gold-dim: rgba(184,149,42,0.12);
+  --cream: #f7f4ec;
+  --parchment: #eee8d8;
+  --border: #c8bda0;
+  --text: #1e1a14;
+  --muted: #6b6355;
+  --sidebar-w: 264px;
+  --green: #2a6b3a;
+  --green-light: #e4f3e8;
+  --red: #8b2020;
+  --red-light: #fdf0f0;
+  --input-bg: #fffef9;
+  --topbar-h: 56px;
+}
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Nunito Sans', sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ══════════════════════════════════════════════════════════
+   TOP BAR
+   ══════════════════════════════════════════════════════════ */
+.topbar {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: var(--topbar-h);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.35);
+}
+.topbar-brand { display: flex; align-items: center; gap: 12px; }
+.topbar-emblem {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.15);
+}
+.topbar-text {}
+.topbar-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.topbar-subtitle {
+  font-family: 'Nunito Sans', sans-serif;
+  font-size: 10px;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.3px;
+  margin-top: 1px;
+}
+.topbar-actions { display: flex; gap: 8px; }
+
+/* ── BUTTONS ── */
+.btn {
+  padding: 6px 16px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Nunito Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.btn-gold { background: var(--gold); color: #fff; }
+.btn-gold:hover { background: var(--gold-light); transform: translateY(-1px); }
+.btn-outline { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.35); }
+.btn-outline:hover { background: rgba(255,255,255,0.08); }
+.btn-green { background: var(--green); color: #fff; }
+.btn-green:hover { background: #358048; }
+.btn-maroon { background: var(--maroon); color: #fff; }
+.btn-maroon:hover { background: #832525; }
+
+/* ══════════════════════════════════════════════════════════
+   APP LAYOUT
+   ══════════════════════════════════════════════════════════ */
+.app-body {
+  display: flex;
+  flex: 1;
+  min-height: calc(100vh - var(--topbar-h));
+}
+
+/* ══════════════════════════════════════════════════════════
+   SIDEBAR
+   ══════════════════════════════════════════════════════════ */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--navy);
+  flex-shrink: 0;
+  position: sticky;
+  top: var(--topbar-h);
+  height: calc(100vh - var(--topbar-h));
+  overflow-y: auto;
+  padding: 10px 0 20px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.15) transparent;
+}
+.sidebar::-webkit-scrollbar { width: 5px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+
+.sidebar-label {
+  font-size: 8.5px;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.28);
+  padding: 14px 16px 5px;
+  font-weight: 700;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border-left: 3px solid transparent;
+  color: rgba(255,255,255,0.55);
+  font-size: 12.5px;
+  user-select: none;
+}
+.nav-item:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.85); }
+.nav-item.active {
+  background: rgba(184,149,42,0.1);
+  border-left-color: var(--gold);
+  color: var(--gold-light);
+}
+.nav-item.active .nav-label { font-weight: 700; }
+.nav-num {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.nav-item.active .nav-num { background: var(--gold); color: var(--navy); }
+.nav-label { line-height: 1.35; }
+.nav-sub {
+  font-size: 9.5px;
+  color: rgba(255,255,255,0.3);
+  margin-top: 1px;
+}
+.nav-item.active .nav-sub { color: rgba(212,170,58,0.5); }
+.nav-item.conditional { border-left: 3px solid transparent; }
+.nav-item.conditional.hidden-section { display: none; }
+
+/* ══════════════════════════════════════════════════════════
+   MAIN PANEL
+   ══════════════════════════════════════════════════════════ */
+.main {
+  flex: 1;
+  padding: 24px 32px;
+  overflow-y: auto;
+  max-width: 860px;
+}
+.section-panel { display: none; animation: fadeIn 0.25s ease; }
+.section-panel.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--gold);
+}
+.section-header-icon {
+  width: 34px; height: 34px;
+  background: var(--gold);
+  border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  color: var(--navy);
+  font-weight: 700;
+}
+.section-desc { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+
+/* ── CARDS ── */
+.card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.card-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy);
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  margin-bottom: 12px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--parchment);
+}
+
+/* ── FORM FIELDS ── */
+.field-row {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 140px;
+}
+.field-group.full { flex-basis: 100%; min-width: 100%; }
+.field-group.half { flex: 0 0 calc(50% - 7px); min-width: calc(50% - 7px); }
+.field-group.third { flex: 0 0 calc(33.33% - 10px); min-width: calc(33.33% - 10px); }
+label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.2px;
+}
+label .req { color: var(--red); font-weight: 700; }
+input[type="text"], input[type="date"], input[type="number"], select, textarea {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: 'Nunito Sans', sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--input-bg);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2.5px rgba(184,149,42,0.12);
+}
+textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+.field-hint {
+  font-size: 10px;
+  color: var(--muted);
+  font-style: italic;
+}
+.auto-tag {
+  display: inline-block;
+  background: var(--green-light);
+  color: var(--green);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+.auto-filled {
+  background: #f0f7f1 !important;
+  border-color: #b0d8b8 !important;
+  color: var(--green) !important;
+  font-style: italic;
+}
+
+/* ── INFO / WARNING BOXES ── */
+.info-box {
+  background: #fffbec;
+  border: 1px solid #e8d87a;
+  border-left: 3px solid var(--gold);
+  border-radius: 4px;
+  padding: 9px 12px;
+  font-size: 11.5px;
+  color: #5a4e20;
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+.cond-box {
+  background: var(--green-light);
+  border: 1px solid #a8d8b8;
+  border-left: 3px solid var(--green);
+  border-radius: 4px;
+  padding: 9px 12px;
+  font-size: 11.5px;
+  color: #1e4a2e;
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+.conv-box {
+  background: #fdf0f0;
+  border: 1px solid #e8b0b0;
+  border-left: 3px solid var(--maroon);
+  border-radius: 4px;
+  padding: 9px 12px;
+  font-size: 11.5px;
+  color: #5a1e1e;
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+
+/* ── TABLE BUILDER (Table V) ── */
+.tbl-builder { border: 1px solid var(--border); border-radius: 5px; overflow: hidden; }
+.tbl-builder table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.tbl-builder th {
+  background: var(--navy);
+  color: #fff;
+  padding: 8px 6px;
+  text-align: left;
+  font-size: 10px;
+  letter-spacing: 0.4px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.tbl-builder td {
+  padding: 5px 4px;
+  border-bottom: 1px solid #eee;
+  vertical-align: top;
+}
+.tbl-builder tr:last-child td { border-bottom: none; }
+.tbl-builder td input, .tbl-builder td select {
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  padding: 4px 6px;
+  font-size: 11.5px;
+  width: 100%;
+  background: var(--input-bg);
+}
+.tbl-builder tr:nth-child(even) td { background: #fafaf6; }
+.add-row-btn {
+  background: var(--parchment);
+  border: 1px dashed var(--gold);
+  border-top: none;
+  width: 100%;
+  padding: 7px;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--gold);
+  font-weight: 700;
+  transition: background 0.15s;
+  font-family: 'Nunito Sans', sans-serif;
+}
+.add-row-btn:hover { background: #e8e0cc; }
+.del-btn {
+  background: none; border: none; cursor: pointer;
+  color: #ccc; font-size: 15px; line-height: 1;
+  transition: color 0.15s;
+  padding: 2px;
+}
+.del-btn:hover { color: var(--red); }
+
+/* ── EVIDENCE PLACEHOLDER ── */
+.evidence-box {
+  border: 2px dashed var(--border);
+  border-radius: 5px;
+  padding: 20px;
+  text-align: center;
+  color: var(--muted);
+  background: var(--parchment);
+  margin-bottom: 14px;
+}
+.evidence-box .ev-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+.evidence-box p { font-size: 11.5px; font-style: italic; }
+
+/* ── NAV BUTTONS ── */
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.btn-nav {
+  padding: 8px 20px;
+  border-radius: 4px;
+  border: 1.5px solid var(--navy);
+  cursor: pointer;
+  font-family: 'Nunito Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.btn-prev { background: #fff; color: var(--navy); }
+.btn-prev:hover { background: var(--parchment); }
+.btn-next { background: var(--navy); color: #fff; border-color: var(--navy); }
+.btn-next:hover { background: var(--navy-light); }
+
+/* ══════════════════════════════════════════════════════════
+   PREVIEW DOCUMENT STYLES
+   ══════════════════════════════════════════════════════════ */
+.preview-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.preview-doc {
+  background: #fff;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  padding: 2cm 1.5cm;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 14pt;
+  line-height: 1.5;
+  color: #000;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.12);
+  max-width: 21cm;
+  margin: 0 auto;
+  text-align: justify;
+}
+.preview-doc p {
+  text-align: justify;
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+/* Preview tables — fit to page */
+.preview-doc .ptbl {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+  font-size: 14pt;
+  table-layout: fixed;
+}
+.preview-doc .ptbl td, .preview-doc .ptbl th {
+  border: 1px solid #000;
+  padding: 5px 8px;
+  vertical-align: top;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+.preview-doc .ptbl th {
+  background: #f0f0f0;
+  font-weight: bold;
+  text-align: center;
+}
+.pv-center { text-align: center !important; }
+.pv-bold { font-weight: bold !important; }
+.pv-upper { text-transform: uppercase !important; }
+.pv-underline { text-decoration: underline !important; }
+.pv-just { text-align: justify !important; }
+
+/* ── RESET DEFAULT BTN ── */
+.reset-default-btn {
+  background: var(--parchment);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  font-family: 'Nunito Sans', sans-serif;
+  transition: all 0.15s;
+}
+.reset-default-btn:hover { background: #e0d8c4; color: var(--text); }
+
+/* ── PRINT ── */
+@media print {
+  .topbar, .sidebar, .nav-buttons, .preview-actions, .section-header { display: none !important; }
+  .app-body { display: block; }
+  .main { padding: 0; max-width: 100%; }
+  .preview-doc { border: none; box-shadow: none; padding: 2cm 1.5cm; max-width: 100%; }
+  .section-panel { display: none !important; }
+  #sec9 { display: block !important; }
+  @page { size: A4; margin: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ TOP BAR ══════════════ -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-emblem">⚖️</div>
+    <div class="topbar-text">
+      <div class="topbar-title">Criminal Judgment Template Generator</div>
+      <div class="topbar-subtitle">State of Gujarat — Sessions / POCSO / NDPS / ACB / ATRO / ELEC Courts</div>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn btn-outline" onclick="clearAll()">🗑 Clear All</button>
+    <button class="btn btn-gold" onclick="goTo(9)">📄 Preview & Export</button>
+  </div>
+</div>
+
+<!-- ══════════════ APP BODY ══════════════ -->
+<div class="app-body">
+
+<!-- ══════════════ SIDEBAR ══════════════ -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-label">Tables</div>
+  <div class="nav-item active" onclick="goTo(0)" id="nav0">
+    <div class="nav-num">1</div>
+    <div class="nav-label">Table I — Filing Details<div class="nav-sub">Dates · Duration · Exhibit</div></div>
+  </div>
+  <div class="nav-item" onclick="goTo(1)" id="nav1">
+    <div class="nav-num">2</div>
+    <div class="nav-label">Table II — Court & Case<div class="nav-sub">Category · FIR · Sections</div></div>
+  </div>
+  <div class="nav-item" onclick="goTo(2)" id="nav2">
+    <div class="nav-num">3</div>
+    <div class="nav-label">Table III — Parties<div class="nav-sub">APP · Accused · Advocate</div></div>
+  </div>
+  <div class="nav-item" onclick="goTo(3)" id="nav3">
+    <div class="nav-num">4</div>
+    <div class="nav-label">Table IV — Important Dates<div class="nav-sub">Key Events · Charges Sections</div></div>
+  </div>
+  <div class="nav-item conditional hidden-section" onclick="goTo(4)" id="nav4">
+    <div class="nav-num">5</div>
+    <div class="nav-label">Committal Details<div class="nav-sub">Sessions Case Only</div></div>
+  </div>
+  <div class="nav-item" onclick="goTo(5)" id="nav5">
+    <div class="nav-num">6</div>
+    <div class="nav-label">Table V — Accused Details<div class="nav-sub">Arrest · Bail · Verdict</div></div>
+  </div>
+
+  <div class="sidebar-label">Judgment Body</div>
+  <div class="nav-item" onclick="goTo(6)" id="nav6">
+    <div class="nav-num">7</div>
+    <div class="nav-label">Evidence & Witnesses<div class="nav-sub">Para 7, 10, 12</div></div>
+  </div>
+  <div class="nav-item" onclick="goTo(7)" id="nav7">
+    <div class="nav-num">8</div>
+    <div class="nav-label">Judgment Body<div class="nav-sub">Para 1, 5, 6, 13, 14, 19</div></div>
+  </div>
+  <div class="nav-item conditional hidden-section" onclick="goTo(10)" id="nav10">
+    <div class="nav-num">9</div>
+    <div class="nav-label">Conviction Details<div class="nav-sub">Para 17(1) · QoS Order</div></div>
+  </div>
+
+  <div class="sidebar-label">Output</div>
+  <div class="nav-item" onclick="goTo(8)" id="nav8">
+    <div class="nav-num">10</div>
+    <div class="nav-label">Officer Details<div class="nav-sub">Name · Designation · UI Code</div></div>
+  </div>
+  <div class="nav-item" onclick="goTo(9)" id="nav9">
+    <div class="nav-num">11</div>
+    <div class="nav-label">Preview & Export<div class="nav-sub">DOC · ODT · Print/PDF</div></div>
+  </div>
+</nav>
+
+<!-- ══════════════ MAIN CONTENT ══════════════ -->
+<main class="main">
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║  SECTION 0: TABLE I — FILING DETAILS        ║
+     ╚══════════════════════════════════════════════╝ -->
+<div class="section-panel active" id="sec0">
+  <div class="section-header">
+    <div class="section-header-icon">📋</div>
+    <div><div class="section-title">Table I — Filing / Institution Details</div>
+    <div class="section-desc">Dates, auto-calculated duration, and exhibit reference</div></div>
+  </div>
+
+  <div class="info-box">⚡ <strong>Duration</strong> (Years / Months / Days) is automatically calculated from "Registered On" to "Decided On".</div>
+
+  <div class="card">
+    <div class="card-title">Filing Dates</div>
+    <div class="field-row">
+      <div class="field-group third">
+        <label>Filed On <span class="req">*</span></label>
+        <input type="date" id="filed_on">
+      </div>
+      <div class="field-group third">
+        <label>Registered On <span class="req">*</span></label>
+        <input type="date" id="registered_on" onchange="calcDuration()">
+      </div>
+      <div class="field-group third">
+        <label>Decided On <span class="req">*</span></label>
+        <input type="date" id="decided_on" onchange="calcDuration()">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Duration <span class="auto-tag">AUTO</span></div>
+    <div class="field-row">
+      <div class="field-group third">
+        <label>Years</label>
+        <input type="text" id="dur_years" class="auto-filled" readonly placeholder="00">
+      </div>
+      <div class="field-group third">
+        <label>Months</label>
+        <input type="text" id="dur_months" class="auto-filled" readonly placeholder="00">
+      </div>
+      <div class="field-group third">
+        <label>Days</label>
+        <input type="text" id="dur_days" class="auto-filled" readonly placeholder="00">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Exhibit</div>
+    <div class="field-row">
+      <div class="field-group half">
+        <label>Exhibit No.</label>
+        <input type="text" id="exhibit_no" placeholder="e.g. 1">
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-buttons">
+    <div></div>
+    <button class="btn-nav btn-next" onclick="goTo(1)">Next: Court & Case →</button>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║  SECTION 1: TABLE II — COURT & CASE         ║
+     ╚══════════════════════════════════════════════╝ -->
+<div class="section-panel" id="sec1">
+  <div class="section-header">
+    <div class="section-header-icon">🏛️</div>
+    <div><div class="section-title">Table II — Court & Case Details</div>
+    <div class="section-desc">Court designation, case category, case number, FIR, sections</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Case Category</div>
+    <div class="field-row">
+      <div class="field-group full">
+        <label>Category of Case <span class="req">*</span></label>
+        <select id="case_category" onchange="onCategoryChange()">
+          <option value="">— Select Category —</option>
+          <option value="Sessions Case">Sessions Case</option>
+          <option value="Special POCSO Case">Special POCSO Case</option>
+          <option value="Special ATRO Case">Special ATRO Case</option>
+          <option value="Special ELEC Case">Special ELEC Case</option>
+          <option value="Special NDPS Case">Special NDPS Case</option>
+          <option value="Special ACB Case">Special ACB Case</option>
+          <option value="other">Other (type below)</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row" id="other_cat_row" style="display:none">
+      <div class="field-group full">
+        <label>Specify Custom Category</label>
+        <input type="text" id="case_category_other" placeholder="e.g. Special SC/ST Case">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Court Title</div>
+    <div class="field-row">
+      <div class="field-group full">
+        <label>Designation of Court <span class="req">*</span></label>
+        <input type="text" id="court_designation" value="ADDITIONAL SESSIONS JUDGE," placeholder="e.g. ADDITIONAL SESSIONS JUDGE,">
+        <span class="field-hint">As it appears in heading — UPPERCASE with comma</span>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field-group full">
+        <label>Court Place <span class="req">*</span></label>
+        <input type="text" id="court_place" placeholder="e.g. AMRELI AT SAVARKUNDLA" oninput="this.value=this.value.toUpperCase()">
+        <span class="field-hint">Auto-fetched in the final signature block</span>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field-group half">
+        <label>Date of Judgment <span class="req">*</span></label>
+        <input type="date" id="judgment_date">
+        <span class="field-hint">DD/MM/YYYY — centrally aligned in output</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Case Number & FIR</div>
+    <div class="field-row">
+      <div class="field-group half">
+        <label>Case Number <span class="req">*</span></label>
+        <input type="text" id="case_number" placeholder="e.g. 12">
+      </div>
+      <div class="field-group half">
+        <label>Case Year <span class="req">*</span></label>
+        <input type="text" id="case_year" placeholder="e.g. 2023">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field-group half">
+        <label>FIR No. <span class="req">*</span></label>
+        <input type="text" id="fir_no" placeholder="e.g. 45">
+      </div>
+      <div class="field-group half">
+        <label>FIR Year <span class="req">*</span></label>
+        <input type="text" id="fir_year" placeholder="e.g. 2020">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field-group full">
+        <label>Police Station <span class="req">*</span></label>
+        <input type="text" id="police_station" placeholder="e.g. Savarkundla Town Police Station">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field-group full">
+        <label>Under Sections (as per FIR) <span class="req">*</span></label>
+        <input type="text" id="under_sections" placeholder="e.g. 302, 120-B IPC / 103, 61(2) BNS">
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn-nav btn-prev" onclick="goTo(0)">← Previous</button>
+    <button class="btn-nav btn-next" onclick="goTo(2)">Next: Parties →</button>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║  SECTION 2: TABLE III — PARTIES              ║
+     ╚══════════════════════════════════════════════╝ -->
+<div class="section-panel" id="sec2">
+  <div class="section-header">
+    <div class="section-header-icon">👥</div>
+    <div><div class="section-title">Table III — Details of Parties / Advocates</div>
+    <div class="section-desc">APP for the State and defence advocate</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Prosecution</div>
+    <div class="field-row">
+      <div class="field-group full">
+        <label>Ld. APP Name <span class="req">*</span></label>
+        <input type="text" id="app_name" placeholder="e.g. Mr. R. K. Sharma">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Defence</div>
+    <div class="field-row">
+      <div class="field-group full">
+        <label>Name(s) of Accused <span class="req">*</span></label>
+        <input type="text" id="accused_names_t3" placeholder="e.g. Ramesh Kumar, Suresh Kumar">
+        <span class="field-hint">Type all names separated by commas</span>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field-group full">
+        <label>Ld. Advocate Name(s) <span class="req">*</span></label>
+        <input type="text" id="advocate_names" placeholder="e.g. Mr. A. B. Patel">
+        <span class="field-hint">Type all advocate names separated by commas</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn-nav btn-prev" onclick="goTo(1)">← Previous</button>
+    <button class="btn-nav btn-next" onclick="goTo(3)">Next: Important Dates →</button>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║  SECTION 3: TABLE IV — IMPORTANT DATES       ║
+     ╚══════════════════════════════════════════════╝ -->
+<div class="section-panel" id="sec3">
+  <div class="section-header">
+    <div class="section-header-icon">📅</div>
+    <div><div class="section-title">Table IV — Important Dates / Events</div>
+    <div class="section-desc">Chronology of proceedings and charges sections</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Key Dates</div>
+    <div class="field-row">
+      <div class="field-group half"><label>Date of Offence</label><input type="date" id="date_offence"></div>
+      <div class="field-group half"><label>Date of FIR</label><input type="date" id="date_fir"></div>
+    </div>
+    <div class="field-row">
+      <div class="field-group half"><label>Date of Charge-sheet</label><input type="date" id="date_chargesheet"></div>
+      <div class="field-group half"><label>Date of Framing of Charges</label><input type="date" id="date_charges_framed"></div>
+    </div>
+    <div class="field-row">
+      <div class="field-group full">
+        <label>Charges Framed by Court Under Sections <span class="req">*</span></label>
+        <input type="text" id="charges_sections" placeholder="e.g. 302, 120-B IPC">
+        <span class="field-hint">Auto-fetched in Para 5, 21, and 22</span>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field-group half"><label>Date of Commencement of Evidence</label><input type="date" id="date_evidence_start"></div>
+      <div class="field-group half"><label>Date Judgment Reserved</label><input type="date" id="date_reserved"></div>
+    </div>
+    <div class="field-row">
+      <div class="field-group half">
+        <label>Date of Judgment <span class="auto-tag">AUTO</span></label>
+        <input type="text" id="date_judgment_t4" class="auto-filled" readonly placeholder="Auto from Section 1">
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn-nav btn-prev" onclick="goTo(2)">← Previous</button>
+    <button class="btn-nav btn-next" onclick="nextAfterDates()">Next →</button>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║  SECTION 4: COMMITTAL (Sessions Case Only)   ║
+     ╚══════════════════════════════════════════════╝ -->
+<div class="section-panel" id="sec4">
+  <div class="section-header">
+    <div class="section-header-icon">🔗</div>
+    <div><div class="section-title">Committal Details</div>
+    <div class="section-desc">Para 4 — Only for Sessions Case category</div></div>
+  </div>
+
+  <div class="cond-box">🔒 This section is <strong>only active for Sessions Case</strong>. Para 4 will be automatically inserted in the judgment. For all other case categories, this section and Para 4 are excluded entirely.</div>
+
+  <div class="card">
+    <div class="card-title">Committing Court & Date</div>
+    <div class="field-row">
+      <div class="field-group full">
+        <label>Designation of Committing Officer <span class="req">*</span></label>
+        <input type="text" id="committing_officer" placeholder="e.g. Chief Judicial Magistrate, Amreli">
+        <span class="field-hint">e.g. JMFC / CJM / Magistrate designation</span>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field-group half">
+        <label>Date of Committal Order <span class="req">*</span></label>
+        <input type="date" id="date_committal">
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn-nav btn-prev" onclick="goTo(3)">← Previous</button>
+    <button class="btn-nav btn-next" onclick="goTo(5)">Next: Accused Details →</button>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║  SECTION 5: TABLE V — ACCUSED DETAILS        ║
+     ╚══════════════════════════════════════════════╝ -->
+<div class="section-panel" id="sec5">
+  <div class="section-header">
+    <div class="section-header-icon">🧑‍⚖️</div>
+    <div><div class="section-title">Table V — Accused Details</div>
+    <div class="section-desc">Arrest, bail, charges, verdict, sentence for each accused</div></div>
+  </div>
+
+  <div class="info-box">Add one row per accused using the button below. Selecting <strong>"Convicted"</strong> in column 5 will unlock the <strong>Conviction Details</strong> section in the sidebar automatically.</div>
+
+  <div class="card" style="padding:12px">
+    <div class="tbl-builder" style="overflow-x:auto">
+      <table style="min-width:900px">
+        <thead><tr>
+          <th style="width:26px">#</th>
+          <th>Name of Accused</th>
+          <th>Date of Arrest</th>
+          <th>Date of Release on Bail</th>
+          <th>Offences Charged With</th>
+          <th>Acquitted / Convicted</th>
+          <th>Sentence Imposed</th>
+          <th>Detention Period (S.428 Cr.P.C. / S.468 BNSS)</th>
+          <th style="width:26px"></th>
+        </tr></thead>
+        <tbody id="accused_tbody"></tbody>
+      </table>
+      <button class="add-row-btn" onclick="addAccusedRow()">+ Add Accused Row</button>
+    </div>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn-nav btn-prev" onclick="prevFromAccused()">← Previous</button>
+    <button class="btn-nav btn-next" onclick="goTo(6)">Next: Evidence →</button>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║  SECTION 6: EVIDENCE & WITNESSES              ║
+     ╚══════════════════════════════════════════════╝ -->
+<div class="section-panel" id="sec6">
+  <div class="section-header">
+    <div class="section-header-icon">📜</div>
+    <div><div class="section-title">Evidence & Witnesses</div>
+    <div class="section-desc">Witness count, closing pursis exhibits for prosecution and defence</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Evidence Captions</div>
+    <div class="evidence-box">
+      <div class="ev-title">(A) Prosecution Oral Evidence:-</div>
+      <p>Table to be inserted by user in the exported document</p>
+    </div>
+    <div class="evidence-box">
+      <div class="ev-title">(B) List of Prosecution Documentary Evidence:-</div>
+      <p>Table to be inserted by user in the exported document</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Para 7 — Number of Witnesses</div>
+    <div class="field-row">
+      <div class="field-group half">
+        <label>Total No. of Prosecution Witnesses <span class="req">*</span></label>
+        <input type="text" id="total_witnesses" placeholder="e.g. 8">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Para 10 — Evidence Closing Pursis by the Prosecution</div>
+    <div class="field-row">
+      <div class="field-group half">
+        <label>Prosecution Closing Pursis Exhibit No. <span class="req">*</span></label>
+        <input type="text" id="prosecution_closing_exhibit" placeholder="e.g. 45">
+        <span class="field-hint">Auto-fetched into Para 10</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Para 12 — Evidence Closing Pursis by the Defence</div>
+    <div class="field-row">
+      <div class="field-group half">
+        <label>Defence Closing Pursis Exhibit No. <span class="req">*</span></label>
+        <input type="text" id="defence_closing_exhibit" placeholder="e.g. 56">
+        <span class="field-hint">Auto-fetched into Para 12</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn-nav btn-prev" onclick="goTo(5)">← Previous</button>
+    <button class="btn-nav btn-next" onclick="goTo(7)">Next: Judgment Body →</button>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║  SECTION 7: JUDGMENT BODY                     ║
+     ╚══════════════════════════════════════════════╝ -->
+<div class="section-panel" id="sec7">
+  <div class="section-header">
+    <div class="section-header-icon">✍️</div>
+    <div><div class="section-title">Judgment Body</div>
+    <div class="section-desc">Key blanks in Paras 1, 5, 6, 13, 14, and 19</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Para 1 — Facts of FIR</div>
+    <div class="field-row">
+      <div class="field-group full">
+        <label>FIR Facts (Gujarati / English) <span class="req">*</span></label>
+        <textarea id="fir_facts" rows="7" placeholder="Paste the narration of FIR facts here in Gujarati or English script..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Para 5 — Charges Exhibit</div>
+    <div class="info-box">Sections are auto-fetched from Table IV "Charges Framed by Court Under Sections". Only the Exhibit number needs to be entered.</div>
+    <div class="field-row">
+      <div class="field-group half">
+        <label>Charges Sections <span class="auto-tag">AUTO</span></label>
+        <input type="text" id="para5_sections_display" class="auto-filled" readonly placeholder="Auto from Table IV">
+      </div>
+      <div class="field-group half">
+        <label>Charges Exhibit No. <span class="req">*</span></label>
+        <input type="text" id="charges_exhibit" placeholder="e.g. 5">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Para 6 — Accused Statement Exhibit(s)</div>
+    <div class="info-box">Single accused: type one exhibit no. (e.g. "18"). Multiple accused: type range (e.g. "18 to 22").</div>
+    <div class="field-row">
+      <div class="field-group full">
+        <label>Exhibit(s) of Accused Statement(s) <span class="req">*</span></label>
+        <input type="text" id="stmt_exhibit" placeholder='e.g. "18" or "18 to 22"'>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Para 13 — Additional Prosecution Arguments</div>
+    <div class="field-row">
+      <div class="field-group full">
+        <label>Additional Arguments by APP (if any)</label>
+        <textarea id="para13_extra" rows="4" placeholder="Optional: Add further prosecution arguments as per facts and circumstances of the case..."></textarea>
+        <span class="field-hint">Leave blank if no additional arguments</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Para 14 — Additional Defence Arguments</div>
+    <div class="field-row">
+      <div class="field-group full">
+        <label>Additional Arguments by Defence (if any)</label>
+        <textarea id="para14_extra" rows="4" placeholder="Optional: Add further defence arguments as per facts and circumstances of the case..."></textarea>
+        <span class="field-hint">Leave blank if no additional arguments</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Para 19 — Judicial Observations</div>
+    <div class="field-row">
+      <div class="field-group full">
+        <label>Observations / Analysis <span class="req">*</span></label>
+        <textarea id="observations" rows="6" placeholder="Enter judicial observations, analysis, and reasoning here..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn-nav btn-prev" onclick="goTo(6)">← Previous</button>
+    <button class="btn-nav btn-next" onclick="nextFromJudgmentBody()">Next →</button>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║  SECTION 8: OFFICER DETAILS                   ║
+     ╚══════════════════════════════════════════════╝ -->
+<div class="section-panel" id="sec8">
+  <div class="section-header">
+    <div class="section-header-icon">🪪</div>
+    <div><div class="section-title">Officer Details</div>
+    <div class="section-desc">Pre-filled with default values — editable for colleagues</div></div>
+  </div>
+
+  <div class="info-box">Your details are pre-filled below. If a colleague uses this template, they can simply edit these fields. Click <strong>"Reset to Default"</strong> to restore your details.</div>
+
+  <div class="card">
+    <div class="card-title">Judicial Officer
+      <button class="reset-default-btn" style="float:right" onclick="resetOfficerDefaults()">🔄 Reset to Default</button>
+    </div>
+    <div class="field-row">
+      <div class="field-group full">
+        <label>Officer Name (as it appears in signature block) <span class="req">*</span></label>
+        <input type="text" id="officer_name" value="SACHIN S. C. SETHI">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field-group full">
+        <label>Officer Designation <span class="req">*</span></label>
+        <input type="text" id="officer_designation" value="Additional Sessions &amp; Special Pocso/NDPS/ACB/Atro Judge,">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field-group half">
+        <label>U.I. Code <span class="req">*</span></label>
+        <input type="text" id="officer_ui_code" value="GJ01540">
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn-nav btn-prev" onclick="prevFromOfficerDetails()">← Previous</button>
+    <button class="btn-nav btn-next" onclick="goTo(9)">Preview &amp; Export →</button>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║  SECTION 9: PREVIEW & EXPORT                  ║
+     ╚══════════════════════════════════════════════╝ -->
+<div class="section-panel" id="sec9">
+  <div class="section-header">
+    <div class="section-header-icon">📄</div>
+    <div><div class="section-title">Preview &amp; Export</div>
+    <div class="section-desc">Review the judgment and download in your preferred format</div></div>
+  </div>
+
+  <div class="preview-actions">
+    <button class="btn btn-gold" onclick="downloadDoc()">📥 Download .DOC</button>
+    <button class="btn btn-green" onclick="downloadODT()">📗 Download .HTML (Open in LibreOffice)</button>
+    <button class="btn btn-maroon" onclick="window.print()">🖨 Print / PDF</button>
+    <button class="btn btn-outline" style="color:var(--navy);border-color:var(--navy)" onclick="refreshPreview()">🔄 Refresh Preview</button>
+  </div>
+
+  <div class="preview-doc" id="preview-content">
+    <p style="color:#999;text-align:center;padding:40px 0;font-style:italic">Click "Refresh Preview" to generate the full judgment preview.</p>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║  SECTION 10: CONVICTION DETAILS (NEW)         ║
+     ╚══════════════════════════════════════════════╝ -->
+<div class="section-panel" id="sec10">
+  <div class="section-header">
+    <div class="section-header-icon">⚖️</div>
+    <div><div class="section-title">Conviction Details</div>
+    <div class="section-desc">Para 17(1) finding · Quantum of Sentence order blanks</div></div>
+  </div>
+
+  <div class="conv-box">🔴 This section is <strong>only operative when "Convicted" is selected</strong> in Table V (Column 5). All fields here feed into the conviction judgment body and the Quantum of Sentence order.</div>
+
+  <!-- PARA 17(1) -->
+  <div class="card">
+    <div class="card-title">Para 17(1) — Finding on Point for Determination No.1</div>
+    <div class="field-row">
+      <div class="field-group half">
+        <label>Select Finding <span class="req">*</span></label>
+        <select id="conv_finding">
+          <option value="In affirmative.">In affirmative.</option>
+          <option value="Partly in affirmative.">Partly in affirmative.</option>
+        </select>
+        <span class="field-hint">Select appropriate finding for Point No.1</span>
+      </div>
+      <div class="field-group half">
+        <label>Convicted Accused No(s). <span class="auto-tag">AUTO</span></label>
+        <input type="text" id="conv_accused_nums_display" class="auto-filled" readonly placeholder="Auto-fetched from Table V">
+        <span class="field-hint">Numbers of convicted accused (auto from Table V)</span>
+      </div>
+    </div>
+    <div class="info-box">Add one row per statute. Each row: Sections (e.g. "302, 120-B") + Statute name (e.g. "Indian Penal Code"). These are auto-fetched into Paras 17(1), 20 &amp; 21.</div>
+    <div class="tbl-builder" style="overflow-x:auto;margin-bottom:8px">
+      <table style="min-width:500px">
+        <thead><tr>
+          <th style="width:45%">Sections (under this Statute)</th>
+          <th>Statute / Act Name</th>
+          <th style="width:26px"></th>
+        </tr></thead>
+        <tbody id="conv_sections_tbody"></tbody>
+      </table>
+      <button class="add-row-btn" onclick="addConvSectionRow()">+ Add Statute Row</button>
+    </div>
+    <span class="field-hint">Example: Row 1 → "302, 120-B" | "Indian Penal Code" &nbsp;·&nbsp; Row 2 → "25" | "Arms Act"<br>Output in judgment: "...under sections 302, 120-B of Indian Penal Code and 25 of Arms Act."</span>
+  </div>
+
+  <!-- QoS PARA 2 -->
+  <div class="card">
+    <div class="card-title">QoS Order — Para 2 — Convict's Statement</div>
+    <div class="field-row">
+      <div class="field-group full">
+        <label>Statement of Convict(s) on Quantum of Sentence <span class="req">*</span></label>
+        <textarea id="conv_statement" rows="5" placeholder="e.g. he/she/they is/are a poor person(s) and is/are the sole bread-winner of the family. He/she/they have young children to take care of. He/she/they has/have no criminal antecedents..."></textarea>
+        <span class="field-hint">This text will be placed in Para 2 of the QoS order after "wherein he/she/they have stated that"</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- QoS PARA 6 — SENTENCE TABLE -->
+  <div class="card">
+    <div class="card-title">QoS Order — Para 6 — Sentence Details</div>
+    <div class="info-box">Add one row per offence section. Each row will generate one line in the sentence table. Click "+ Add Sentence Row" to add more rows for multiple sections.</div>
+    <div class="tbl-builder" style="overflow-x:auto;margin-bottom:8px">
+      <table style="min-width:700px">
+        <thead><tr>
+          <th style="width:180px">Offence under Section</th>
+          <th>RI Period</th>
+          <th>Fine Amount (Rs.)</th>
+          <th>Default RI Period</th>
+          <th style="width:26px"></th>
+        </tr></thead>
+        <tbody id="sentence_tbody"></tbody>
+      </table>
+      <button class="add-row-btn" onclick="addSentenceRow()">+ Add Sentence Row</button>
+    </div>
+    <span class="field-hint">Each row: "Offence under Section [X] → Rigorous Imprisonment for [RI] and fine of Rs. [Fine] each. In default of payment of fine the accused shall further undergo rigorous imprisonment for [Default RI]."</span>
+  </div>
+
+  <!-- QoS PARA 9 — DLSA -->
+  <div class="card">
+    <div class="card-title">QoS Order — Para 9 — DLSA &amp; Compensation</div>
+    <div class="field-row">
+      <div class="field-group half">
+        <label>District Legal Services Authority — District/Place <span class="req">*</span></label>
+        <input type="text" id="conv_dlsa_place" placeholder="e.g. Amreli">
+        <span class="field-hint">Auto-fetched into Para 9 and Para 12 of QoS order</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn-nav btn-prev" onclick="goTo(7)">← Previous</button>
+    <button class="btn-nav btn-next" onclick="goTo(8)">Next: Officer Details →</button>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     JAVASCRIPT
+     ══════════════════════════════════════════════════════════ -->
+<script>
+// ═══════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════
+let currentSection = 0;
+
+function goTo(idx) {
+  document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec' + idx).classList.add('active');
+  document.getElementById('nav' + idx).classList.add('active');
+  currentSection = idx;
+  if (idx === 9) refreshPreview();
+  if (idx === 10) syncConvictionAccusedNums();
+  syncAutoFields();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function nextAfterDates() {
+  goTo(isSessionsCase() ? 4 : 5);
+}
+
+function prevFromAccused() {
+  goTo(isSessionsCase() ? 4 : 3);
+}
+
+function nextFromJudgmentBody() {
+  goTo(isConvictionMode() ? 10 : 8);
+}
+
+function prevFromOfficerDetails() {
+  goTo(isConvictionMode() ? 10 : 7);
+}
+
+function clearAll() {
+  if (!confirm('Clear ALL entered data and reset all fields?')) return;
+  document.querySelectorAll('input[type="text"], input[type="date"], input[type="number"], textarea').forEach(el => {
+    if (!el.classList.contains('auto-filled') || el.id === 'dur_years' || el.id === 'dur_months' || el.id === 'dur_days' || el.id === 'date_judgment_t4' || el.id === 'para5_sections_display' || el.id === 'conv_accused_nums_display') {
+      el.value = '';
+    }
+  });
+  document.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+  document.getElementById('accused_tbody').innerHTML = '';
+  document.getElementById('sentence_tbody').innerHTML = '';
+  document.getElementById('conv_sections_tbody').innerHTML = '';
+  document.getElementById('other_cat_row').style.display = 'none';
+  document.getElementById('dur_years').value = '';
+  document.getElementById('dur_months').value = '';
+  document.getElementById('dur_days').value = '';
+  document.getElementById('conv_accused_nums_display').value = '';
+  resetOfficerDefaults();
+  onCategoryChange();
+  updateConvictionNav();
+  addAccusedRow();
+  addSentenceRow();
+  addConvSectionRow();
+  goTo(0);
+}
+
+// ═══════════════════════════════════════
+//  AUTO CALCULATIONS
+// ═══════════════════════════════════════
+function calcDuration() {
+  const r = g('registered_on'), d = g('decided_on');
+  if (!r || !d) return;
+  let start = new Date(r), end = new Date(d);
+  if (end < start) return;
+  let years = end.getFullYear() - start.getFullYear();
+  let months = end.getMonth() - start.getMonth();
+  let days = end.getDate() - start.getDate();
+  if (days < 0) {
+    months--;
+    const prev = new Date(end.getFullYear(), end.getMonth(), 0);
+    days += prev.getDate();
+  }
+  if (months < 0) { years--; months += 12; }
+  document.getElementById('dur_years').value = String(years).padStart(2, '0');
+  document.getElementById('dur_months').value = String(months).padStart(2, '0');
+  document.getElementById('dur_days').value = String(days).padStart(2, '0');
+}
+
+function syncAutoFields() {
+  const jd = g('judgment_date');
+  if (jd) document.getElementById('date_judgment_t4').value = fmtDate(jd);
+  const cs = g('charges_sections');
+  if (cs) document.getElementById('para5_sections_display').value = cs;
+}
+
+function syncConvictionAccusedNums() {
+  const nums = getConvictedAccusedNumbers();
+  document.getElementById('conv_accused_nums_display').value = nums.length ? formatAccusedNums(nums) : '';
+}
+
+// ═══════════════════════════════════════
+//  CASE CATEGORY
+// ═══════════════════════════════════════
+function onCategoryChange() {
+  const v = g('case_category');
+  document.getElementById('other_cat_row').style.display = v === 'other' ? 'flex' : 'none';
+  const nav4 = document.getElementById('nav4');
+  if (v === 'Sessions Case') {
+    nav4.classList.remove('hidden-section');
+  } else {
+    nav4.classList.add('hidden-section');
+  }
+}
+
+function isSessionsCase() {
+  return g('case_category') === 'Sessions Case';
+}
+
+function getCaseCategory() {
+  const v = g('case_category');
+  if (v === 'other') return g('case_category_other') || '[___]';
+  return v || '[___]';
+}
+
+// ═══════════════════════════════════════
+//  CONVICTION MODE DETECTION
+// ═══════════════════════════════════════
+function isConvictionMode() {
+  const rows = document.querySelectorAll('#accused_tbody tr');
+  for (let r of rows) {
+    const sel = r.cells[5] && r.cells[5].querySelector('select');
+    if (sel && sel.value === 'Convicted') return true;
+  }
+  return false;
+}
+
+function getConvictedAccusedNumbers() {
+  const rows = document.querySelectorAll('#accused_tbody tr');
+  const nums = [];
+  rows.forEach((r, i) => {
+    const sel = r.cells[5] && r.cells[5].querySelector('select');
+    if (sel && sel.value === 'Convicted') nums.push(i + 1);
+  });
+  return nums;
+}
+
+function formatAccusedNums(nums) {
+  if (!nums.length) return '[___]';
+  if (nums.length === 1) return String(nums[0]);
+  let isConsec = true;
+  for (let i = 1; i < nums.length; i++) {
+    if (nums[i] !== nums[i - 1] + 1) { isConsec = false; break; }
+  }
+  if (isConsec) return nums[0] + ' to ' + nums[nums.length - 1];
+  return nums.slice(0, -1).join(', ') + ' and ' + nums[nums.length - 1];
+}
+
+function updateConvictionNav() {
+  const nav10 = document.getElementById('nav10');
+  if (isConvictionMode()) {
+    nav10.classList.remove('hidden-section');
+  } else {
+    nav10.classList.add('hidden-section');
+  }
+}
+
+// ═══════════════════════════════════════
+//  TABLE V — ACCUSED ROWS
+// ═══════════════════════════════════════
+function addAccusedRow() {
+  const tbody = document.getElementById('accused_tbody');
+  const idx = tbody.rows.length + 1;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td style="text-align:center">${idx}</td>
+    <td><input type="text" class="acc-name" placeholder="Full name" style="min-width:110px"></td>
+    <td><input type="date" style="min-width:120px"></td>
+    <td><input type="date" style="min-width:120px"></td>
+    <td><input type="text" placeholder="Sections" style="min-width:90px"></td>
+    <td><select style="min-width:100px" onchange="updateConvictionNav()"><option value="">—</option><option>Acquitted</option><option>Convicted</option></select></td>
+    <td><input type="text" placeholder="e.g. 7 yrs RI" style="min-width:90px"></td>
+    <td><input type="text" placeholder="e.g. 1Y 2M 3D" style="min-width:90px"></td>
+    <td><button class="del-btn" onclick="this.closest('tr').remove();renumAccused();updateConvictionNav()">✕</button></td>`;
+  tbody.appendChild(tr);
+}
+
+function renumAccused() {
+  document.querySelectorAll('#accused_tbody tr').forEach((r, i) => r.cells[0].textContent = i + 1);
+}
+
+// ═══════════════════════════════════════
+//  SENTENCE TABLE ROWS (QoS Para 6)
+// ═══════════════════════════════════════
+function addSentenceRow() {
+  const tbody = document.getElementById('sentence_tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" class="sent-section" placeholder="e.g. 302 IPC" style="width:100%"></td>
+    <td><input type="text" class="sent-ri" placeholder="e.g. Life / 7 years" style="width:100%"></td>
+    <td><input type="text" class="sent-fine" placeholder="e.g. 5000" style="width:100%"></td>
+    <td><input type="text" class="sent-default" placeholder="e.g. 6 months" style="width:100%"></td>
+    <td><button class="del-btn" onclick="this.closest('tr').remove()">✕</button></td>`;
+  tbody.appendChild(tr);
+}
+
+// ═══════════════════════════════════════
+//  CONVICTION SECTIONS TABLE (sec10)
+// ═══════════════════════════════════════
+function addConvSectionRow() {
+  const tbody = document.getElementById('conv_sections_tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" class="conv-sec-input" placeholder="e.g. 302, 120-B" style="width:100%"></td>
+    <td><input type="text" class="conv-stat-input" placeholder="e.g. Indian Penal Code" style="width:100%"></td>
+    <td><button class="del-btn" onclick="this.closest('tr').remove()">✕</button></td>`;
+  tbody.appendChild(tr);
+}
+
+function getConvSectionsText() {
+  const rows = document.querySelectorAll('#conv_sections_tbody tr');
+  if (!rows.length) return '[___________] of [___________]';
+  const parts = [];
+  rows.forEach(r => {
+    const sec  = (r.querySelector('.conv-sec-input')  && r.querySelector('.conv-sec-input').value.trim())  || '[___________]';
+    const stat = (r.querySelector('.conv-stat-input') && r.querySelector('.conv-stat-input').value.trim()) || '[___________]';
+    parts.push(`${sec} of ${stat}`);
+  });
+  if (parts.length === 1) return parts[0];
+  return parts.slice(0, -1).join(', ') + ' and ' + parts[parts.length - 1];
+}
+
+function getSentenceTableRows() {
+  const rows = document.querySelectorAll('#sentence_tbody tr');
+  if (!rows.length) {
+    return `<tr>
+      <td style="border:1px solid #000;padding:5px">[Section]</td>
+      <td style="border:1px solid #000;padding:5px">Rigorous Imprisonment for [___________] and fine of Rs. [___________] each. In default of payment of fine the accused (who commits such default) shall further undergo rigorous imprisonment for [___________].</td>
+    </tr>`;
+  }
+  let html = '';
+  rows.forEach(r => {
+    const sec  = (r.querySelector('.sent-section') && r.querySelector('.sent-section').value) || '[___________]';
+    const ri   = (r.querySelector('.sent-ri')      && r.querySelector('.sent-ri').value)      || '[___________]';
+    const fine = (r.querySelector('.sent-fine')    && r.querySelector('.sent-fine').value)    || '[___________]';
+    const def  = (r.querySelector('.sent-default') && r.querySelector('.sent-default').value) || '[___________]';
+    html += `<tr>
+      <td style="border:1px solid #000;padding:5px">${sec}</td>
+      <td style="border:1px solid #000;padding:5px">Rigorous Imprisonment for ${ri} and fine of Rs. ${fine} each. In default of payment of fine the accused (who commits such default) shall further undergo rigorous imprisonment for ${def}.</td>
+    </tr>`;
+  });
+  return html;
+}
+
+// ═══════════════════════════════════════
+//  OFFICER DEFAULTS
+// ═══════════════════════════════════════
+function resetOfficerDefaults() {
+  document.getElementById('officer_name').value = 'SACHIN S. C. SETHI';
+  document.getElementById('officer_designation').value = 'Additional Sessions & Special Pocso/NDPS/ACB/Atro Judge,';
+  document.getElementById('officer_ui_code').value = 'GJ01540';
+}
+
+// ═══════════════════════════════════════
+//  HELPER FUNCTIONS
+// ═══════════════════════════════════════
+function g(id) { return (document.getElementById(id) || {}).value || ''; }
+
+function fmtDate(dateStr) {
+  if (!dateStr) return '[___________]';
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return dateStr;
+  return `${parts[2]}/${parts[1]}/${parts[0]}`;
+}
+
+function ordinalDate(dateStr) {
+  if (!dateStr) return '[___________]';
+  const [y, m, d] = dateStr.split('-');
+  const day = parseInt(d);
+  const sfx = ['th','st','nd','rd'];
+  const v = day % 100;
+  const ord = sfx[(v - 20) % 10] || sfx[v] || sfx[0];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return `${day}${ord} day of ${months[parseInt(m) - 1]} ${y}`;
+}
+
+function b(s) { return s || '[___________]'; }
+
+function getAccusedNamesFromTableV() {
+  const rows = document.querySelectorAll('#accused_tbody tr');
+  const names = [];
+  rows.forEach(r => {
+    const n = r.querySelector('input.acc-name');
+    if (n && n.value.trim()) names.push(n.value.trim());
+  });
+  return names.length ? names.join(' and ') : '[___________]';
+}
+
+// ═══════════════════════════════════════
+//  SIGNATURE BLOCK HELPER
+// ═══════════════════════════════════════
+function signatureBlock(decidedOn, courtPlace, officerName, officerDesig, officerUI) {
+  return `
+<br>
+<p style="font-weight:bold;margin-bottom:14px">Pronounced and signed in the open Court today on this ${decidedOn ? ordinalDate(decidedOn) : '[___________]'}.</p>
+<br>
+<table class="ptbl" style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:14pt" border="1" cellpadding="5" cellspacing="0">
+  <tr>
+    <td style="width:50%;vertical-align:top;font-weight:bold;border:1px solid #000;padding:8px">
+      Date : ${fmtDate(decidedOn)}<br>
+      Place: ${courtPlace}
+    </td>
+    <td style="width:50%;text-align:right;vertical-align:top;font-weight:bold;border:1px solid #000;padding:8px">
+      (${officerName})<br>
+      ${officerDesig}<br>
+      U.I. CODE- ${officerUI}
+    </td>
+  </tr>
+</table>`;
+}
+
+// ═══════════════════════════════════════
+//  PREVIEW GENERATOR
+// ═══════════════════════════════════════
+function refreshPreview() {
+  syncAutoFields();
+
+  const cat           = getCaseCategory();
+  const catUpper      = cat.toUpperCase();
+  const caseNum       = b(g('case_number'));
+  const caseYear      = b(g('case_year'));
+  const firNo         = b(g('fir_no'));
+  const firYear       = b(g('fir_year'));
+  const ps            = b(g('police_station'));
+  const underSec      = b(g('under_sections'));
+  const chargeSec     = b(g('charges_sections'));
+  const courtDesg     = g('court_designation') || 'ADDITIONAL SESSIONS JUDGE,';
+  const courtPlace    = g('court_place') || '[___________]';
+  const appName       = b(g('app_name'));
+  const accusedT3     = b(g('accused_names_t3'));
+  const advocateT3    = b(g('advocate_names'));
+  const judgDate      = g('judgment_date') || g('decided_on') || '';
+  const decidedOn     = g('decided_on') || '';
+  const filedOn       = g('filed_on') || '';
+  const regOn         = g('registered_on') || '';
+  const durY          = g('dur_years') || '__';
+  const durM          = g('dur_months') || '__';
+  const durD          = g('dur_days') || '__';
+  const exhibitNo     = g('exhibit_no') || '';
+  const witnesses     = b(g('total_witnesses'));
+  const prosClosingExh = b(g('prosecution_closing_exhibit'));
+  const defClosingExh  = b(g('defence_closing_exhibit'));
+  const chargesExh    = b(g('charges_exhibit'));
+  const stmtExh       = b(g('stmt_exhibit'));
+  const observations  = g('observations') || '[Observations to be added by the user]';
+  const firFacts      = g('fir_facts') || '';
+  const para13Extra   = g('para13_extra');
+  const para14Extra   = g('para14_extra');
+  const accusedNames  = getAccusedNamesFromTableV();
+  const committingOfficer = b(g('committing_officer'));
+  const dateCommittal = fmtDate(g('date_committal'));
+  const officerName   = g('officer_name') || 'SACHIN S. C. SETHI';
+  const officerDesig  = g('officer_designation') || 'Additional Sessions & Special Pocso/NDPS/ACB/Atro Judge,';
+  const officerUI     = g('officer_ui_code') || 'GJ01540';
+
+  const para13Insert  = para13Extra ? ` ${para13Extra}` : '';
+  const para14Insert  = para14Extra ? ` ${para14Extra}` : '';
+
+  // Conviction mode data
+  const convMode       = isConvictionMode();
+  const convNums       = getConvictedAccusedNumbers();
+  const convNumsStr    = formatAccusedNums(convNums);
+  const convFinding    = g('conv_finding') || 'In affirmative.';
+  const convSectionsText = getConvSectionsText();
+  const convStatement  = g('conv_statement') || '[___________]';
+  const convDlsaPlace  = g('conv_dlsa_place') || '[___________]';
+
+  // Build Table V accused rows for preview
+  let accusedRows = '';
+  const accTbody = document.querySelectorAll('#accused_tbody tr');
+  if (!accTbody.length) {
+    accusedRows = `<tr>
+      <td style="border:1px solid #000;padding:5px">[___]</td>
+      <td style="border:1px solid #000;padding:5px"></td>
+      <td style="border:1px solid #000;padding:5px"></td>
+      <td style="border:1px solid #000;padding:5px">${underSec}</td>
+      <td style="border:1px solid #000;padding:5px"></td>
+      <td style="border:1px solid #000;padding:5px"></td>
+      <td style="border:1px solid #000;padding:5px"></td>
+    </tr>`;
+  } else {
+    accTbody.forEach((r) => {
+      const c = r.cells;
+      const bs = 'border:1px solid #000;padding:5px';
+      accusedRows += `<tr>
+        <td style="${bs}">${c[1]?.querySelector('input')?.value || ''}</td>
+        <td style="${bs}">${fmtDate(c[2]?.querySelector('input')?.value)}</td>
+        <td style="${bs}">${fmtDate(c[3]?.querySelector('input')?.value)}</td>
+        <td style="${bs}">${c[4]?.querySelector('input')?.value || underSec}</td>
+        <td style="${bs}">${c[5]?.querySelector('select')?.value || ''}</td>
+        <td style="${bs}">${c[6]?.querySelector('input')?.value || ''}</td>
+        <td style="${bs}">${c[7]?.querySelector('input')?.value || ''}</td>
+      </tr>`;
+    });
+  }
+
+  // Para 4 conditional
+  const para4 = isSessionsCase()
+    ? `<p style="text-align:justify;margin-bottom:14px"><strong>${P4num}.</strong> Thereupon the present case was committed to this court by Ld. ${committingOfficer} vide committal order dated ${dateCommittal}. Upon Committal the case was numbered and registered as Sessions Case and the proceedings started therein.</p>`
+    : '';
+
+  // ── DYNAMIC PARA NUMBERING ──────────────────────────────────────────────
+  let _pn = 0;
+  const P1  = ++_pn;
+  const P2  = ++_pn;
+  const P3  = ++_pn;
+  const hasP4 = isSessionsCase();
+  if (hasP4) ++_pn;
+  const P4num = hasP4 ? _pn : null;
+  const P5  = ++_pn;
+  const P6  = ++_pn;
+  const P7  = ++_pn;
+  const P8  = ++_pn;
+  const P9  = ++_pn;
+  const P10 = ++_pn;
+  const P11 = ++_pn;
+  const P12 = ++_pn;
+  const P13 = ++_pn;
+  const P14 = ++_pn;
+  const P15 = ++_pn;
+  const P16 = ++_pn;
+  const P17 = ++_pn;
+  const P18 = ++_pn;
+  const P19 = ++_pn;
+  const P20 = ++_pn;
+  const P21 = ++_pn;
+  const P22 = ++_pn;
+  const P23 = ++_pn;
+  const P24 = ++_pn;
+  const P25 = ++_pn;
+
+  // ── COMMON BODY (Para 1 to 16) ──────────────────────────────────────────
+  const commonBody = `
+<!-- TABLE I -->
+<table class="ptbl" style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:14pt" border="1" cellpadding="5" cellspacing="0">
+  <tr><th colspan="3" style="text-align:center;font-size:14pt;border:1px solid #000;padding:5px;background:#f0f0f0">TABLE I<br>FILING / INSTITUTION DETAILS</th></tr>
+  <tr>
+    <td rowspan="5" style="width:22%;vertical-align:middle;text-align:center;border:1px solid #000;padding:5px">&nbsp;<br>&nbsp;<br>&nbsp;<br>&nbsp;</td>
+    <td style="width:39%;border:1px solid #000;padding:5px">Filed on&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</td>
+    <td style="width:39%;border:1px solid #000;padding:5px">${fmtDate(filedOn)}</td>
+  </tr>
+  <tr>
+    <td style="border:1px solid #000;padding:5px">Registered on :</td>
+    <td style="border:1px solid #000;padding:5px">${fmtDate(regOn)}</td>
+  </tr>
+  <tr>
+    <td style="border:1px solid #000;padding:5px">Decided on&nbsp;&nbsp;&nbsp;&nbsp;:</td>
+    <td style="border:1px solid #000;padding:5px">${fmtDate(decidedOn)}</td>
+  </tr>
+  <tr>
+    <td style="border:1px solid #000;padding:5px">Duration&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</td>
+    <td style="border:1px solid #000;padding:5px">
+      <table style="width:100%;border-collapse:collapse" border="1" cellpadding="3" cellspacing="0">
+        <tr style="text-align:center;font-size:12pt">
+          <td style="border:1px solid #000;padding:3px;width:33%">Years</td>
+          <td style="border:1px solid #000;padding:3px;width:33%">Months</td>
+          <td style="border:1px solid #000;padding:3px;width:34%">Days</td>
+        </tr>
+        <tr style="text-align:center">
+          <td style="border:1px solid #000;padding:3px">${durY}</td>
+          <td style="border:1px solid #000;padding:3px">${durM}</td>
+          <td style="border:1px solid #000;padding:3px">${durD}</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td style="border:1px solid #000;padding:5px">Exhibit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</td>
+    <td style="border:1px solid #000;padding:5px">${exhibitNo || ''}</td>
+  </tr>
+</table>
+
+<!-- NATIONAL EMBLEM -->
+<div style="text-align:center;margin:16px 0 8px">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/120px-Emblem_of_India.svg.png"
+       alt="Indian National Emblem" style="width:2cm;height:2cm;object-fit:contain"
+       onerror="this.outerHTML='<div style=\\'font-size:10pt;color:#666\\'>[Indian National Emblem — 2cm × 2cm]</div>'">
+</div>
+
+<!-- COURT TITLE -->
+<p style="text-align:center;font-weight:bold;text-transform:uppercase;margin-bottom:2px;font-size:14pt">IN THE COURT OF ${courtDesg}</p>
+<p style="text-align:center;font-weight:bold;text-transform:uppercase;margin-bottom:8px;font-size:14pt">${courtPlace}</p>
+<p style="text-align:center;margin-bottom:14px;font-size:14pt">[Date of the Judgment: ${judgDate ? fmtDate(judgDate) : '________'}]</p>
+
+<!-- TABLE II -->
+<table class="ptbl" style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:14pt" border="1" cellpadding="5" cellspacing="0">
+  <tr><th colspan="2" style="text-align:center;font-size:14pt;border:1px solid #000;padding:5px;background:#f0f0f0">TABLE II<br>CASE DETAILS</th></tr>
+  <tr><td colspan="2" style="text-align:center;font-weight:bold;border:1px solid #000;padding:5px">${catUpper} NO. ${caseNum} OF ${caseYear}</td></tr>
+  <tr><td colspan="2" style="text-align:center;border:1px solid #000;padding:5px">ARISING OUT OF</td></tr>
+  <tr><td style="width:45%;border:1px solid #000;padding:5px">FIR No.</td><td style="width:55%;border:1px solid #000;padding:5px">: ${firNo} of ${firYear}</td></tr>
+  <tr><td style="border:1px solid #000;padding:5px">Police Station</td><td style="border:1px solid #000;padding:5px">: ${ps}</td></tr>
+  <tr><td style="border:1px solid #000;padding:5px">Under Sections</td><td style="border:1px solid #000;padding:5px">: ${underSec}</td></tr>
+</table>
+
+<br>
+
+<!-- TABLE III -->
+<table class="ptbl" style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:14pt" border="1" cellpadding="5" cellspacing="0">
+  <tr><th colspan="2" style="text-align:center;font-size:14pt;border:1px solid #000;padding:5px;background:#f0f0f0">TABLE III<br>DETAILS OF PARTIES / ADVOCATES</th></tr>
+  <tr><td style="width:30%;border:1px solid #000;padding:5px">Complainant</td><td style="width:70%;border:1px solid #000;padding:5px">The State of Gujarat</td></tr>
+  <tr><td style="border:1px solid #000;padding:5px">Represented by</td><td style="border:1px solid #000;padding:5px">Ld. APP ${appName} for the State</td></tr>
+  <tr><td style="border:1px solid #000;padding:5px">Accused</td><td style="border:1px solid #000;padding:5px">${accusedT3}</td></tr>
+  <tr><td style="border:1px solid #000;padding:5px">Represented by</td><td style="border:1px solid #000;padding:5px">Ld. Advocate ${advocateT3} for the Accused</td></tr>
+</table>
+
+<br>
+
+<!-- TABLE IV -->
+<table class="ptbl" style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:14pt" border="1" cellpadding="5" cellspacing="0">
+  <tr><th colspan="2" style="text-align:center;font-size:14pt;border:1px solid #000;padding:5px;background:#f0f0f0">TABLE IV<br>IMPORTANT DATES / EVENTS</th></tr>
+  <tr><td style="width:55%;border:1px solid #000;padding:5px">Date of offence</td><td style="width:45%;border:1px solid #000;padding:5px">${fmtDate(g('date_offence'))}</td></tr>
+  <tr><td style="border:1px solid #000;padding:5px">Date of FIR</td><td style="border:1px solid #000;padding:5px">${fmtDate(g('date_fir'))}</td></tr>
+  <tr><td style="border:1px solid #000;padding:5px">Date of Charge-sheet</td><td style="border:1px solid #000;padding:5px">${fmtDate(g('date_chargesheet'))}</td></tr>
+  <tr><td style="border:1px solid #000;padding:5px">Date of Framing of charges</td><td style="border:1px solid #000;padding:5px">${fmtDate(g('date_charges_framed'))}</td></tr>
+  <tr><td style="border:1px solid #000;padding:5px">Charges Framed by Court Under Sections</td><td style="border:1px solid #000;padding:5px">${chargeSec}</td></tr>
+  <tr><td style="border:1px solid #000;padding:5px">Date of commencement of evidence</td><td style="border:1px solid #000;padding:5px">${fmtDate(g('date_evidence_start'))}</td></tr>
+  <tr><td style="border:1px solid #000;padding:5px">Date on which judgment is reserved</td><td style="border:1px solid #000;padding:5px">${fmtDate(g('date_reserved'))}</td></tr>
+  <tr><td style="border:1px solid #000;padding:5px">Date of the Judgment</td><td style="border:1px solid #000;padding:5px">${judgDate ? fmtDate(judgDate) : '[___________]'}</td></tr>
+  <tr><td style="border:1px solid #000;padding:5px">Date of the Sentencing Order, if any</td><td style="border:1px solid #000;padding:5px">As per final order.</td></tr>
+</table>
+
+<br>
+
+<!-- TABLE V -->
+<table class="ptbl" style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:11pt" border="1" cellpadding="5" cellspacing="0">
+  <tr><th colspan="7" style="text-align:center;font-size:14pt;border:1px solid #000;padding:5px;background:#f0f0f0">TABLE V<br>ACCUSED DETAILS</th></tr>
+  <tr>
+    <th style="font-size:10pt;border:1px solid #000;padding:5px">Name of Accused</th>
+    <th style="font-size:10pt;border:1px solid #000;padding:5px">Date of Arrest</th>
+    <th style="font-size:10pt;border:1px solid #000;padding:5px">Date of Release on Bail</th>
+    <th style="font-size:10pt;border:1px solid #000;padding:5px">Offences charged with</th>
+    <th style="font-size:10pt;border:1px solid #000;padding:5px">Whether Acquitted or Convicted</th>
+    <th style="font-size:10pt;border:1px solid #000;padding:5px">Sentence imposed</th>
+    <th style="font-size:10pt;border:1px solid #000;padding:5px">Period of detention Undergone during Trial for purpose of Section 428 Cr.P.C. / Section 468 of BNSS</th>
+  </tr>
+  ${accusedRows}
+</table>
+
+<br>
+
+<!-- EVIDENCE CAPTIONS -->
+<p style="text-align:left;font-weight:bold;text-transform:uppercase;margin-bottom:6px">(A) Prosecution oral evidence:-</p>
+<p style="color:#888;font-style:italic;font-size:12pt;margin-bottom:14px">[TABLE TO BE INSERTED HERE]</p>
+
+<p style="text-align:left;font-weight:bold;text-transform:uppercase;margin-bottom:6px">(B) List of Prosecution documentary evidence:-</p>
+<p style="color:#888;font-style:italic;font-size:12pt;margin-bottom:14px">[TABLE TO BE INSERTED HERE]</p>
+
+<br>
+
+<!-- JUDGMENT HEADING -->
+<p style="text-align:center;font-weight:bold;font-size:14pt;margin-bottom:14px">-: J U D G E M E N T :-</p>
+
+<!-- PARA 1 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P1}.</strong> In nutshell the case of prosecution as it emerges out of FIR are as follows:</p>
+${firFacts ? `<p style="text-align:justify;margin-bottom:14px">${firFacts}</p>` : '<p style="color:#888;font-style:italic;margin-bottom:14px">[FIR facts to be pasted here]</p>'}
+
+<!-- PARA 2 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P2}.</strong> In these circumstances, the FIR of present case was registered upon the aforementioned statement against the accused(s) for commission of the aforementioned offences as per FIR bearing registration no. ${firNo} of ${firYear}.</p>
+
+<!-- PARA 3 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P3}.</strong> After registration of the case the investigation in the present case commenced. Site was inspected, statements of witnesses / victim were recorded. Accused(s) was/were arrested. Thereupon finding a case against the present accused(s) 'Final Report' under Section 173 of Code of Criminal Procedure (hereinafter referred to as 'Code' for short)/193 of the Bhartiya Nagarik Suraksha Sanhita (hereinafter referred to as 'BNSS' for short) was filed. Copies of final report were supplied to the accused free of cost as envisaged under Section 207 of the Code / 230 of the BNSS.</p>
+
+<!-- PARA 4 (CONDITIONAL) -->
+${para4}
+
+<!-- PARA 5 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P5}.</strong> Finding a prima-facie case against the accused, charges were framed against him/her/them under Sections ${chargeSec} at Exhibit: ${chargesExh}.</p>
+
+<!-- PARA 6 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P6}.</strong> The charges were read over and explained to the accused to which the accused pleaded not guilty and claimed to be tried vide his/her/their statement(s) at Exhibit(s): ${stmtExh}, as envisaged under Section 228 of the Code/251 of the BNSS.</p>
+
+<!-- PARA 7 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P7}.</strong> In order to prove its case, the prosecution has examined as many as ${witnesses} witnesses.</p>
+
+<!-- PARA 8 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P8}.</strong> It is further important to take note of the fact that the evidence of aforesaid witnesses recorded in the present case is voluminous and runs into numerous pages, hence, in order to defy any error on account of translation of the same which may creep in due to such voluminous evidence, the depositions of the witnesses is reproduced herein below in Gujarati language in which the same were recorded. It is further important to mention here that certain irrelevant parts and suggestions (which have been denied by the witnesses) have been omitted from the reproduction of depositions of witnesses wherever so required.</p>
+
+<!-- PARA 9 PLACEHOLDER -->
+<p style="color:#888;font-style:italic;margin-bottom:14px">[INSERT GUJARATI DEPOSITIONS HERE - PARAGRAPH NO. ${P9}. onwards to be consecutively numbered either as per sequence of paragraphs already in currency or as per 9.1, 9.2 and so on by the user]</p>
+
+<!-- PARA 10 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P10}.</strong> In these circumstances the prosecution has examined all the above witnesses and thereafter closed its evidence vide Closing Pursis at Exhibit: ${prosClosingExh}.</p>
+
+<!-- PARA 11 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P11}.</strong> Statement(s) of accused was/were recorded u/s. 313 of the Code/ 351 of BNSS in the above-mentioned circumstances in which the entire incriminating evidence was put to him/her/them but he/she/they denied the allegations and pleaded his/her/their false implication in the present case.</p>
+
+<!-- PARA 12 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P12}.</strong> Thereafter, the accused closed his/her/their evidence vide pursis at Exhibit: ${defClosingExh}.</p>
+
+<!-- PARA 13 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P13}.</strong> Opening the arguments, Learned APP for the State has vehemently submitted that the prosecution has fully proved its case beyond the shadow of reasonable doubt against the accused by examining all the witnesses mentioned herein before. He has further submitted that in such circumstances the hostility of few of the witnesses is not capable of rejecting the case of prosecution out-rightly.${para13Insert} As such, he has prayed that the accused may be convicted and sentenced with severest possible sentences.</p>
+
+<!-- PARA 14 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P14}.</strong> On the contrary, learned advocate for the accused has vehemently submitted that the prosecution has miserably failed to prove its case beyond the shadow of reasonable doubt. He has further submitted that even the star witnesses of the prosecution has not deposed any such thing which could have fulfilled the ingredients of any of the offences. He has further submitted that in any criminal trial the accused is presumed to be innocent until proven guilty and the burden is always on the prosecution to prove the charges beyond the shadow of reasonable doubt.${para14Insert} As per him the prosecution can not rely upon the circumstances which may be true and it is required to travel the distance between the 'may be true' and 'must be true' which has not been done in the present case. As such he has prayed that accused may be acquitted of all the charges leveled against him.</p>
+
+<!-- PARA 15 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P15}.</strong> I have heard both the ld. advocates and perused the case file carefully.</p>
+
+<!-- PARA 16 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P16}.</strong> Keeping in view the arguments submitted by the Ld. Advocates, facts and evidence available on record following points arise for determination by virtue of section 354(1)(b) of the Code / 393(1)(b) of BNSS.</p>
+<p style="text-align:justify;margin-bottom:6px;margin-left:24px"><strong>1.</strong> Whether the prosecution successfully proves beyond the shadow of reasonable doubt that the accused has committed any offence, if yes, what offence?</p>
+<p style="text-align:justify;margin-bottom:14px;margin-left:24px"><strong>2.</strong> What order?</p>`;
+
+  // ── ACQUITTAL BODY (Para 17 onwards) ─────────────────────────────────────
+  const acquittalBody = `
+<!-- PARA 17 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P17}.</strong> My findings to aforementioned points for determination are as under:</p>
+<p style="text-align:justify;margin-bottom:6px;margin-left:24px"><strong>1.</strong> In Negative.</p>
+<p style="text-align:justify;margin-bottom:14px;margin-left:24px"><strong>2.</strong> As per final order</p>
+
+<!-- REASONING 1 -->
+<p style="font-weight:bold;text-decoration:underline;margin-bottom:14px">Reasoning for Point(s) for Determination No.1:</p>
+
+<!-- PARA 18 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P18}.</strong> So far this point for determination is concerned, the deposition of all the witnesses have already reproduced in the Gujarati portion of this judgment, and the same are not repeated for the sake of brevity.</p>
+
+<!-- PARA 19 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P19}.</strong> ${observations}</p>
+
+<!-- PARA 20 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P20}.</strong> Keeping in view all the discussion made herein above this court is of the considered opinion that Ld. Advocate for the accused is right in submitting that the prosecution has failed to travel the distance between 'may be true' and 'must be true' and thus failed to prove its case beyond the shadow of reasonable doubt against the accused. Resultantly, the findings in respect of point no. 1 are hereby returned against the prosecution and in favor of accused.</p>
+
+<!-- REASONING 2 -->
+<p style="font-weight:bold;text-decoration:underline;margin-bottom:14px">Reasoning for Point(s) for Determination No.2:</p>
+
+<!-- PARA 21 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P21}.</strong> As a sequel of above discussion and keeping in view the testimonies of all the witnesses mentioned herein before, this court is of the considered opinion that prosecution has failed to prove its case and charges under Sections ${chargeSec} against the accused beyond the shadow of reasonable doubt.</p>
+
+<!-- ORDER HEADING -->
+<p style="text-align:center;font-weight:bold;font-size:14pt;margin-bottom:14px">-: O R D E R :-</p>
+
+<!-- PARA 22 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P22}.</strong> The accused namely ${accusedNames} in ${cat} No. ${caseNum} of ${caseYear} are hereby acquitted from the charges under Sections ${chargeSec} framed against them.</p>
+
+<!-- PARA 23 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P23}.</strong> The case property if any is ordered to be disposed off as per the rules on the expiry of the period of an appeal, if any, in case of filing of an appeal, as per the direction of the Hon'ble Appellate Court.</p>
+
+<!-- PARA 24 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P24}.</strong> The accused are hereby directed to submit fresh bail bond under Section 437(A) of the Code/ 481 of BNSS for a period of six months in a sum of Rs.15,000/- (Rupees Fifteen Thousand only) with one surety of like amount.</p>
+
+<!-- PARA 25 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P25}.</strong> Previous surety bonds of the accused stands discharged.</p>
+
+${signatureBlock(decidedOn, courtPlace, officerName, officerDesig, officerUI)}`;
+
+  // ── CONVICTION BODY (Para 17 onwards) ────────────────────────────────────
+  const convictionBody = `
+<!-- PARA 17 — CONVICTION -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P17}.</strong> My findings to aforementioned points for determination are as under:</p>
+<p style="text-align:justify;margin-bottom:6px;margin-left:24px"><strong>1.</strong> ${convFinding} The accused(s) no. ${convNumsStr} has/have been found guilty for commission of offences under sections ${convSectionsText}.</p>
+<p style="text-align:justify;margin-bottom:14px;margin-left:24px"><strong>2.</strong> As per final order</p>
+
+<!-- REASONING 1 -->
+<p style="font-weight:bold;text-decoration:underline;margin-bottom:14px">Reasoning for Point(s) for Determination No.1:</p>
+
+<!-- PARA 18 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P18}.</strong> So far this point for determination is concerned, the deposition of all the witnesses have already reproduced in the Gujarati portion of this judgment, and the same are not repeated for the sake of brevity.</p>
+
+<!-- PARA 19 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P19}.</strong> ${observations}</p>
+
+<!-- PARA 20 — CONVICTION SUBSTITUTION -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P20}.</strong> Keeping in view all the discussion made herein above this court is of the considered opinion that Ld. APP for the State is right in submitting that the prosecution has successfully proved its case beyond the shadow of reasonable doubt against the accused no. ${convNumsStr} under sections ${convSectionsText}. Resultantly, the findings in respect of point no. 1 are hereby returned in favor of the prosecution and against the accused.</p>
+
+<!-- REASONING 2 -->
+<p style="font-weight:bold;text-decoration:underline;margin-bottom:14px">Reasoning for Point(s) for Determination No.2:</p>
+
+<!-- PARA 21 — CONVICTION SUBSTITUTION -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P21}.</strong> As a sequel of above discussion and keeping in view the testimonies of all the witnesses, this court is of the considered opinion that the prosecution has successfully proved its case beyond the shadow of reasonable doubt as mentioned hereinbefore. Accordingly, the accused no. ${convNumsStr} has/have been found guilty for commission of offences under sections ${convSectionsText}.</p>
+
+<!-- PARA 22 — NEW -->
+<p style="text-align:justify;margin-bottom:14px"><strong>${P22}.</strong> Let the statement(s) of convict(s) and evidence (if any) be recorded under section 235(2) of the Code /258 of BNSS, and the convict(s) be heard on the question of quantum of sentence.</p>
+
+${signatureBlock(decidedOn, courtPlace, officerName, officerDesig, officerUI)}
+
+<!-- PAGE BREAK — QoS starts on new page -->
+<div style="page-break-before:always;mso-page-break-before:always;margin:0;padding:0"></div>
+
+<!-- QUANTUM OF SENTENCE HEADING -->
+<p style="text-align:center;font-weight:bold;font-size:14pt;margin-bottom:20px;margin-top:20px">-: QUANTUM OF SENTENCE :-</p>
+
+<!-- APPEARANCE BLOCK -->
+<p style="text-align:justify;margin-bottom:6px"><strong>Appearance:</strong></p>
+<p style="text-align:justify;margin-bottom:6px">${appName} &nbsp;: &nbsp; Learned APP for State.</p>
+<p style="text-align:justify;margin-bottom:20px">${advocateT3} &nbsp;: &nbsp; Learned Advocate for accused, along with accused.</p>
+
+<!-- QoS PARA 1 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>1.</strong> This order be treated as a part of the judgment.</p>
+
+<!-- QoS PARA 2 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>2.</strong> Statements of convict(s) have been recorded separately on the question of quantum of sentence, wherein he/she/they have stated that ${convStatement}. Hence, a prayer has been made to take a lenient view in the matter of sentence.</p>
+
+<!-- QoS PARA 3 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>3.</strong> Learned APP for the state has submitted that the offences committed by the accused are grave and heinous in nature. As such he has prayed that the accused do not deserve any leniency and he be punished with maximum sentence.</p>
+
+<!-- QoS PARA 4 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>4.</strong> On the contrary learned Advocate for the accused has submitted that though the accused have been convicted yet some leniency be shown in the matter of sentence. Accordingly he has prayed that maximum sentence may not be imposed upon accused.</p>
+
+<!-- QoS PARA 5 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>5.</strong> Heard, both the learned Advocates.</p>
+
+<!-- QoS PARA 6 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>6.</strong> Considering the facts and circumstances available on record, the age of accused, the manner in which the offence was committed, and the antecedents of the convict(s), this Court is of the considered opinion that interest of justice will be best served if the convict(s)/accused no. ${convNumsStr} are sentenced in following manner:</p>
+<table class="ptbl" style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:14pt" border="1" cellpadding="5" cellspacing="0">
+  <tr>
+    <th style="width:30%;text-align:center;border:1px solid #000;padding:5px;background:#f0f0f0">Offence under Section</th>
+    <th style="text-align:center;border:1px solid #000;padding:5px;background:#f0f0f0">Sentence</th>
+  </tr>
+  ${getSentenceTableRows()}
+</table>
+
+<!-- QoS PARA 7 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>7.</strong> The fine if recovered shall be paid to the victim or his/her/their legal heirs.</p>
+
+<!-- QoS PARA 8 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>8.</strong> The substantive sentences shall run concurrently. The period of imprisonment already undergone by the convict(s) during the trial of the case shall be set off against his/her/their respective substantive sentence.</p>
+
+<!-- QoS PARA 9 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>9.</strong> Considering, the over all facts and circumstances of the present case this Court is of the opinion that the victim / legal heirs of the victim (as the case may be) must be suitably compensated. The compensation of amount of fine imposed is certainly not adequate. Therefore recommendation is made to District Legal Services Authority, ${convDlsaPlace} to award compensation to the complainant under section 357-A of the Code / 396 of BNSS. Let a copy of the judgment be forwarded to the Ld. Secretary, District Legal Services Authority, ${convDlsaPlace} at the earliest for necessary action.</p>
+
+<!-- QoS PARA 10 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>10.</strong> Case property be disposed of as per rules after the expiry of period of appeal, or in case of appeal as per the directions of Hon'ble Appellate Court.</p>
+
+<!-- QoS PARA 11 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>11.</strong> A copy of this judgment be given to convict(s) free of cost as envisaged under section 363 of the Code / 404 of BNSS.</p>
+
+<!-- QoS PARA 12 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>12.</strong> A copy of this judgment be also forwarded to District Magistrate, ${convDlsaPlace} within whose local jurisdiction the trial of the case has been held for necessary compliance of section 365 of the Code/ 406 of the BNSS.</p>
+
+<!-- QoS PARA 13 -->
+<p style="text-align:justify;margin-bottom:14px"><strong>13.</strong> File be consigned after due compliance.</p>
+
+${signatureBlock(decidedOn, courtPlace, officerName, officerDesig, officerUI)}`;
+
+  // ── ASSEMBLE FINAL HTML ───────────────────────────────────────────────────
+  const html = `
+<div style="font-family:'Times New Roman',Times,serif;font-size:14pt;line-height:1.5;color:#000">
+${commonBody}
+${convMode ? convictionBody : acquittalBody}
+</div>`;
+
+  document.getElementById('preview-content').innerHTML = html;
+}
+
+// ═══════════════════════════════════════
+//  DOWNLOAD FUNCTIONS
+// ═══════════════════════════════════════
+function downloadDoc() {
+  refreshPreview();
+  const previewEl = document.getElementById('preview-content');
+  const innerDiv = previewEl.querySelector('div');
+  let content = innerDiv ? innerDiv.innerHTML : previewEl.innerHTML;
+  content = content.replace(/<table /g, '<table width="100%" ');
+
+  const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+<meta charset='utf-8'>
+<title>Criminal Judgment</title>
+<!--[if gte mso 9]><xml>
+<w:WordDocument>
+<w:View>Print</w:View>
+<w:Zoom>100</w:Zoom>
+<w:DoNotOptimizeForBrowser/>
+</w:WordDocument>
+</xml><![endif]-->
+<style>
+@page { size: 21cm 29.7cm; margin: 2cm 2cm 2cm 2cm; }
+body { 
+  font-family: 'Times New Roman', Times, serif; 
+  font-size: 14pt; 
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+}
+table { 
+  border-collapse: collapse; 
+  width: 100% !important;
+  table-layout: fixed;
+  margin-left: 0;
+  margin-right: 0;
+}
+td, th { 
+  border: 1px solid #000; 
+  padding: 5px 8px; 
+  vertical-align: top; 
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+th { background-color: #f0f0f0; font-weight: bold; }
+p { text-align: justify; margin-bottom: 14px; margin-top: 0; }
+</style>
+</head>
+<body style="font-family:'Times New Roman',Times,serif;font-size:14pt;line-height:1.5">
+${content}
+</body></html>`;
+  const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Criminal_Judgment.doc';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function downloadODT() {
+  refreshPreview();
+  const previewEl = document.getElementById('preview-content');
+  const innerDiv = previewEl.querySelector('div');
+  let content = innerDiv ? innerDiv.innerHTML : previewEl.innerHTML;
+  content = content.replace(/<table /g, '<table width="100%" ');
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Criminal Judgment</title>
+<style>
+@page { size: A4; margin: 2cm 2cm 2cm 2cm; }
+body { 
+  font-family: 'Times New Roman', Times, serif; 
+  font-size: 14pt; 
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+}
+table { 
+  border-collapse: collapse; 
+  width: 100% !important;
+  table-layout: fixed;
+  margin-left: 0;
+  margin-right: 0;
+}
+td, th { 
+  border: 1px solid #000; 
+  padding: 5px 8px; 
+  vertical-align: top; 
+  word-wrap: break-word;
+}
+th { background-color: #f0f0f0; font-weight: bold; }
+p { text-align: justify; margin-bottom: 14px; margin-top: 0; }
+</style>
+</head>
+<body style="font-family:'Times New Roman',Times,serif;font-size:14pt;line-height:1.5">
+${content}
+</body></html>`;
+  const blob = new Blob([html], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Criminal_Judgment.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ═══════════════════════════════════════
+//  INITIALIZATION
+// ═══════════════════════════════════════
+window.addEventListener('DOMContentLoaded', function() {
+  addAccusedRow();
+  addSentenceRow();
+  addConvSectionRow();
+  onCategoryChange();
+  updateConvictionNav();
+});
+</script>
+</body>
+</html>
